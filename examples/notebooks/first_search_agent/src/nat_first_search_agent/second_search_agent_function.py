@@ -32,6 +32,7 @@ class SecondSearchAgentFunctionConfig(FunctionBaseConfig, name="second_search_ag
     """
     NeMo Agent toolkit function template. Please update the description.
     """
+
     tool_names: list[FunctionRef] = Field(default=[], description="List of tool names to use")
     llm_name: LLMRef = Field(description="LLM name to use")
     max_history: int = Field(default=10, description="Maximum number of historical messages to provide to the agent")
@@ -59,20 +60,17 @@ async def second_search_agent_function(config: SecondSearchAgentFunctionConfig, 
     react_agent = create_react_agent(llm=llm, tools=tools, prompt=prompt, stop_sequence=["\nObservation"])
 
     # Initialize an agent executor to iterate through reasoning steps
-    agent_executor = AgentExecutor(agent=react_agent,
-                                   tools=tools,
-                                   max_iterations=config.max_iterations,
-                                   handle_parsing_errors=config.handle_parsing_errors,
-                                   verbose=config.verbose)
+    agent_executor = AgentExecutor(
+        agent=react_agent,
+        tools=tools,
+        max_iterations=config.max_iterations,
+        handle_parsing_errors=config.handle_parsing_errors,
+        verbose=config.verbose,
+    )
 
     async def _response_fn(input_message: str) -> str:
         response = await agent_executor.ainvoke({"input": input_message, "chat_history": []})
 
         return response["output"]
 
-    try:
-        yield FunctionInfo.create(single_fn=_response_fn)
-    except GeneratorExit:
-        print("Function exited early!")
-    finally:
-        print("Cleaning up second_search_agent workflow.")
+    yield FunctionInfo.create(single_fn=_response_fn)

@@ -28,17 +28,20 @@ general:
         _type: phoenix
         endpoint: http://localhost:6006/v1/traces
         project: retail_sales_agent
+      weave:
+        _type: weave
+        project: "nat-notebooks"
 
 llms:
   supervisor_llm:
     _type: nim
-    model_name: meta/llama-3.1-70b-instruct
+    model_name: nvidia/llama-3.3-nemotron-super-49b-v1.5
     temperature: 0.0
     max_tokens: 2048
     api_key: $NVIDIA_API_KEY
   nim_llm:
     _type: nim
-    model_name: meta/llama-3.1-70b-instruct
+    model_name: nvidia/llama-3.3-nemotron-super-49b-v1.5
     temperature: 0.0
     max_tokens: 2048
     context_window: 32768
@@ -50,11 +53,11 @@ llms:
     api_key: $OPENAI_API_KEY
   nim_rag_eval_llm:
     _type: nim
-    model_name: meta/llama-3.1-70b-instruct
+    model_name: meta/llama-3.3-70b-instruct
     max_tokens: 8
   nim_trajectory_eval_llm:
     _type: nim
-    model_name: meta/llama-3.1-70b-instruct
+    model_name: meta/llama-3.3-70b-instruct
     temperature: 0.0
     max_tokens: 1024
 
@@ -129,7 +132,7 @@ functions:
 
   product_catalog_rag:
     _type: local_llama_index_rag
-    llm_name: nim_llm
+    llm_name: supervisor_llm
     embedder_name: nim_embedder
     collection_name: product_catalog_rag
     data_dir: ./retail_sales_agent/data/retail_sales_data.csv

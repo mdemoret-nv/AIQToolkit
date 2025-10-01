@@ -20,4 +20,4 @@ general:
       level: WARN
 
 workflow:
-  _type: first_search_agent
+  _type: nat_first_search_agent/first_search_agent

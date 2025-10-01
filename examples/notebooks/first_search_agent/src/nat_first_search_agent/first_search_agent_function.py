@@ -30,6 +30,7 @@ class FirstSearchAgentFunctionConfig(FunctionBaseConfig, name="first_search_agen
     """
     NeMo Agent toolkit function template. Please update the description.
     """
+
     parameter: str = Field(default="default_value", description="Notional description for this parameter")
 
 
@@ -77,9 +78,4 @@ async def first_search_agent_function(_config: FirstSearchAgentFunctionConfig, _
 
         return response["output"]
 
-    try:
-        yield FunctionInfo.from_fn(_response_fn)
-    except GeneratorExit:
-        print("Function exited early!")
-    finally:
-        print("Cleaning up first_search_agent workflow.")
+    yield FunctionInfo.from_fn(_response_fn)

@@ -23,17 +23,25 @@ general:
         _type: file
         path: ../../.tmp/nat_retail_sales_agent.log
         level: DEBUG
+    tracing:
+      weave:
+        _type: weave
+        project: "nat-notebooks"
+      phoenix:
+        _type: phoenix
+        endpoint: http://localhost:6006/v1/traces
+        project: retail_sales_agent_profiling
 
 llms:
   supervisor_llm:
     _type: nim
-    model_name: meta/llama-3.3-70b-instruct
+    model_name: nvidia/llama-3.1-nemotron-70b-instruct
     temperature: 0.0
     max_tokens: 2048
     api_key: $NVIDIA_API_KEY
   nim_llm:
     _type: nim
-    model_name: meta/llama-3.3-70b-instruct
+    model_name: nvidia/llama-3.1-nemotron-70b-instruct
     temperature: 0.0
     max_tokens: 2048
     context_window: 32768
@@ -45,11 +53,11 @@ llms:
     api_key: $OPENAI_API_KEY
   nim_rag_eval_llm:
     _type: nim
-    model_name: meta/llama-3.1-70b-instruct
+    model_name: nvidia/llama-3.1-nemotron-70b-instruct
     max_tokens: 8
   nim_trajectory_eval_llm:
     _type: nim
-    model_name: meta/llama-3.1-70b-instruct
+    model_name: nvidia/llama-3.1-nemotron-70b-instruct
     temperature: 0.0
     max_tokens: 1024
 
@@ -100,11 +108,11 @@ functions:
       Do you want to summarize the created graph content?
   graph_summarizer:
     _type: graph_summarizer
-    llm_name: summarizer_llm
+    llm_name: supervisor_llm
 
   data_visualization_agent:
     _type: data_visualization_agent
-    llm_name: summarizer_llm
+    llm_name: supervisor_llm
     tool_names:
       - plot_sales_trend_for_stores
       - plot_and_compare_revenue_across_stores
@@ -146,7 +154,7 @@ functions:
 workflow:
   _type: react_agent
   tool_names: [data_analysis_agent, data_visualization_agent, rag_agent]
-  llm_name: summarizer_llm
+  llm_name: supervisor_llm
   verbose: true
   handle_parsing_errors: true
   max_retries: 2

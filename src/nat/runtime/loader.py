@@ -66,7 +66,7 @@ class PluginTypes(IntFlag):
     """
 
 
-def load_config(config_file: StrPath) -> Config:
+def load_config(config_file: StrPath | Config) -> Config:
     """
     This is the primary entry point for loading a NAT configuration file. It ensures that all plugins are
     loaded and then validates the configuration file against the Config schema.
@@ -85,6 +85,9 @@ def load_config(config_file: StrPath) -> Config:
     # Ensure all of the plugins are loaded
     discover_and_register_plugins(PluginTypes.CONFIG_OBJECT)
 
+    if isinstance(config_file, Config):
+        return config_file
+
     config_yaml = yaml_load(config_file)
 
     # Validate configuration adheres to NAT schemas
@@ -94,7 +97,7 @@ def load_config(config_file: StrPath) -> Config:
 
 
 @asynccontextmanager
-async def load_workflow(config_file: StrPath, max_concurrency: int = -1):
+async def load_workflow(config_file: StrPath | Config, max_concurrency: int = -1):
     """
     Load the NAT configuration file and create an Runner object. This is the primary entry point for running
     NAT workflows.
@@ -113,7 +116,6 @@ async def load_workflow(config_file: StrPath, max_concurrency: int = -1):
 
     # Must yield the workflow function otherwise it cleans up
     async with WorkflowBuilder.from_config(config=config) as workflow:
-
         yield SessionManager(workflow.build(), max_concurrency=max_concurrency)
 
 
@@ -129,15 +131,15 @@ def discover_entrypoints(plugin_type: PluginTypes):
 
     # Add the specified plugin type to the list of groups to load
     # The aiq entrypoints are intentionally left in the list to maintain backwards compatibility.
-    if (plugin_type & PluginTypes.COMPONENT):
+    if plugin_type & PluginTypes.COMPONENT:
         plugin_groups.extend(["aiq.plugins", "aiq.components", "nat.plugins", "nat.components"])
-    if (plugin_type & PluginTypes.FRONT_END):
+    if plugin_type & PluginTypes.FRONT_END:
         plugin_groups.extend(["aiq.front_ends", "nat.front_ends"])
-    if (plugin_type & PluginTypes.REGISTRY_HANDLER):
+    if plugin_type & PluginTypes.REGISTRY_HANDLER:
         plugin_groups.extend(["aiq.registry_handlers", "nat.registry_handlers"])
-    if (plugin_type & PluginTypes.EVALUATOR):
+    if plugin_type & PluginTypes.EVALUATOR:
         plugin_groups.extend(["aiq.evaluators", "nat.evaluators"])
-    if (plugin_type & PluginTypes.AUTHENTICATION):
+    if plugin_type & PluginTypes.AUTHENTICATION:
         plugin_groups.extend(["aiq.authentication_providers", "nat.authentication_providers"])
 
     # Get the entry points for the specified groups
@@ -178,7 +180,6 @@ def discover_and_register_plugins(plugin_type: PluginTypes):
 
     # Pause registration hooks for performance. This is useful when loading a large number of plugins.
     with GlobalTypeRegistry.get().pause_registration_changed_hooks():
-
         for entry_point in nat_plugins:
             try:
                 logger.debug("Loading module '%s' from entry point '%s'...", entry_point.module, entry_point.name)
@@ -189,21 +190,24 @@ def discover_and_register_plugins(plugin_type: PluginTypes):
 
                 elapsed_time = (time.time() - start_time) * 1000
 
-                logger.debug("Loading module '%s' from entry point '%s'...Complete (%f ms)",
-                             entry_point.module,
-                             entry_point.name,
-                             elapsed_time)
+                logger.debug(
+                    "Loading module '%s' from entry point '%s'...Complete (%f ms)",
+                    entry_point.module,
+                    entry_point.name,
+                    elapsed_time,
+                )
 
                 # Log a warning if the plugin took a long time to load. This can be useful for debugging slow imports.
                 # The threshold is 300 ms if no plugins have been loaded yet, and 100 ms otherwise. Triple the threshold
                 # if a debugger is attached.
-                if (elapsed_time > (300.0 if count == 0 else 150.0) * (3 if is_debugger_attached() else 1)):
+                if elapsed_time > (300.0 if count == 0 else 150.0) * (3 if is_debugger_attached() else 1):
                     logger.debug(
                         "Loading module '%s' from entry point '%s' took a long time (%f ms). "
                         "Ensure all imports are inside your registered functions.",
                         entry_point.module,
                         entry_point.name,
-                        elapsed_time)
+                        elapsed_time,
+                    )
 
             except ImportError:
                 logger.warning("Failed to import plugin '%s'", entry_point.name, exc_info=True)

@@ -41,3 +41,17 @@ def is_debugger_attached() -> bool:
             return True
 
     return False
+
+
+def is_interactive_mode() -> bool:
+    """
+    Check if the current process is in interactive mode (i.e. not running from a file). Useful for determining if were
+    running from a notebook.
+
+    Returns
+    -------
+    bool
+        True if the current process is in interactive mode, False otherwise
+    """
+    import __main__ as main
+    return not hasattr(main, '__file__')
