@@ -143,17 +143,19 @@ class RegisteredInfo(BaseModel, typing.Generic[TypedBaseModelT]):
     def validate_full_type(cls, full_type: str) -> str:
         parts = full_type.split("/")
 
-        if len(parts) != 2:
+        if (len(parts) != 2):
             raise ValueError(f"Invalid full type: {full_type}. Expected format: `module_name/local_name`")
 
         return full_type
 
 
 class RegisteredTelemetryExporter(RegisteredInfo[TelemetryExporterBaseConfig]):
+
     build_fn: TeleExporterRegisteredCallableT = Field(repr=False)
 
 
 class RegisteredLoggingMethod(RegisteredInfo[LoggingBaseConfig]):
+
     build_fn: LoggingMethodRegisteredCallableT = Field(repr=False)
 
 
@@ -278,7 +280,6 @@ class RegisteredRetrieverClientInfo(RegisteredInfo[RetrieverBaseConfig]):
     Represents a registered Retriever Client. Retriever Clients are the LLM Framework-specific clients that expose an
     interface to the Retriever object.
     """
-
     llm_framework: str | None
     build_fn: RetrieverClientRegisteredCallableT = Field(repr=False)
 
@@ -364,7 +365,8 @@ class TypeRegistry:
         self._registered_channel_map = {}
 
     def _registration_changed(self):
-        if not self._registration_changed_hooks_active:
+
+        if (not self._registration_changed_hooks_active):
             return
 
         logger.debug("Registration changed. Notifying hooks.")
@@ -373,10 +375,12 @@ class TypeRegistry:
             hook()
 
     def add_registration_changed_hook(self, cb: Callable[[], typing.Any]) -> None:
+
         self._registration_changed_hooks.append(cb)
 
     @contextmanager
     def pause_registration_changed_hooks(self):
+
         self._registration_changed_hooks_active = False
 
         try:
@@ -388,7 +392,8 @@ class TypeRegistry:
             self._registration_changed()
 
     def register_telemetry_exporter(self, registration: RegisteredTelemetryExporter):
-        if registration.config_type in self._registered_telemetry_exporters:
+
+        if (registration.config_type in self._registered_telemetry_exporters):
             raise ValueError(f"A telemetry exporter with the same config type `{registration.config_type}` has already "
                              "been registered.")
 
@@ -397,6 +402,7 @@ class TypeRegistry:
         self._registration_changed()
 
     def get_telemetry_exporter(self, config_type: type[TelemetryExporterBaseConfig]) -> RegisteredTelemetryExporter:
+
         try:
             return self._registered_telemetry_exporters[config_type]
         except KeyError as err:
@@ -404,12 +410,14 @@ class TypeRegistry:
                            f"Registered configs: {set(self._registered_telemetry_exporters.keys())}") from err
 
     def get_registered_telemetry_exporters(self) -> list[RegisteredInfo[TelemetryExporterBaseConfig]]:
+
         return list(self._registered_telemetry_exporters.values())
 
     def register_logging_method(self, registration: RegisteredLoggingMethod):
-        if registration.config_type in self._registered_logging_methods:
-            raise ValueError(
-                f"A logging method with the same config type `{registration.config_type}` has already been registered.")
+
+        if (registration.config_type in self._registered_logging_methods):
+            raise ValueError(f"A logging method with the same config type `{registration.config_type}` has already "
+                             "been registered.")
 
         self._registered_logging_methods[registration.config_type] = registration
 
@@ -423,18 +431,21 @@ class TypeRegistry:
                            f"Known: {set(self._registered_logging_methods.keys())}") from err
 
     def get_registered_logging_method(self) -> list[RegisteredInfo[LoggingBaseConfig]]:
+
         return list(self._registered_logging_methods.values())
 
     def register_front_end(self, registration: RegisteredFrontEndInfo):
-        if registration.config_type in self._registered_front_end_infos:
-            raise ValueError(
-                f"A front end with the same config type `{registration.config_type}` has already been registered.")
+
+        if (registration.config_type in self._registered_front_end_infos):
+            raise ValueError(f"A front end with the same config type `{registration.config_type}` has already been "
+                             "registered.")
 
         self._registered_front_end_infos[registration.config_type] = registration
 
         self._registration_changed()
 
     def get_front_end(self, config_type: type[FrontEndBaseConfig]) -> RegisteredFrontEndInfo:
+
         try:
             return self._registered_front_end_infos[config_type]
         except KeyError as err:
@@ -460,6 +471,7 @@ class TypeRegistry:
         self._registration_changed()
 
     def get_function(self, config_type: type[FunctionBaseConfig]) -> RegisteredFunctionInfo:
+
         try:
             return self._registered_functions[config_type.full_type]
         except KeyError as err:
@@ -467,10 +479,12 @@ class TypeRegistry:
                            f"Registered configs: {set(self._registered_functions.keys())}") from err
 
     def get_registered_functions(self) -> list[RegisteredInfo[FunctionBaseConfig]]:
+
         return list(self._registered_functions.values())
 
     def register_llm_provider(self, info: RegisteredLLMProviderInfo):
-        if info.config_type in self._registered_llm_provider_infos:
+
+        if (info.config_type in self._registered_llm_provider_infos):
             raise ValueError(
                 f"An LLM provider with the same config type `{info.config_type}` has already been registered.")
 
@@ -479,6 +493,7 @@ class TypeRegistry:
         self._registration_changed()
 
     def get_llm_provider(self, config_type: type[LLMBaseConfig]) -> RegisteredLLMProviderInfo:
+
         try:
             return self._registered_llm_provider_infos[config_type]
         except KeyError as err:
@@ -489,7 +504,8 @@ class TypeRegistry:
         return list(self._registered_llm_provider_infos.values())
 
     def register_auth_provider(self, info: RegisteredAuthProviderInfo):
-        if info.config_type in self._registered_auth_provider_infos:
+
+        if (info.config_type in self._registered_auth_provider_infos):
             raise ValueError(
                 f"An Authentication Provider with the same config type `{info.config_type}` has already been "
                 "registered.")
@@ -509,6 +525,7 @@ class TypeRegistry:
         return list(self._registered_auth_provider_infos.values())
 
     def register_llm_client(self, info: RegisteredLLMClientInfo):
+
         if (info.config_type in self._llm_client_provider_to_framework
                 and info.llm_framework in self._llm_client_provider_to_framework[info.config_type]):
             raise ValueError(f"An LLM client with the same config type `{info.config_type}` "
@@ -520,6 +537,7 @@ class TypeRegistry:
         self._registration_changed()
 
     def get_llm_client(self, config_type: type[LLMBaseConfig], wrapper_type: str) -> RegisteredLLMClientInfo:
+
         try:
             client_info = self._llm_client_provider_to_framework[config_type][wrapper_type]
         except KeyError as err:
@@ -533,15 +551,17 @@ class TypeRegistry:
         return client_info
 
     def register_embedder_provider(self, info: RegisteredEmbedderProviderInfo):
-        if info.config_type in self._registered_embedder_provider_infos:
-            raise ValueError(
-                f"An Embedder provider with the same config type `{info.config_type}` has already been registered.")
+
+        if (info.config_type in self._registered_embedder_provider_infos):
+            raise ValueError(f"An Embedder provider with the same config type `{info.config_type}` has already been "
+                             "registered.")
 
         self._registered_embedder_provider_infos[info.config_type] = info
 
         self._registration_changed()
 
     def get_embedder_provider(self, config_type: type[EmbedderBaseConfig]) -> RegisteredEmbedderProviderInfo:
+
         try:
             return self._registered_embedder_provider_infos[config_type]
         except KeyError as err:
@@ -549,13 +569,15 @@ class TypeRegistry:
                            f"Registered configs: {set(self._registered_embedder_provider_infos.keys())}") from err
 
     def get_registered_embedder_providers(self) -> list[RegisteredInfo[EmbedderBaseConfig]]:
+
         return list(self._registered_embedder_provider_infos.values())
 
     def register_embedder_client(self, info: RegisteredEmbedderClientInfo):
+
         if (info.config_type in self._embedder_client_provider_to_framework
                 and info.llm_framework in self._embedder_client_provider_to_framework[info.config_type]):
-            raise ValueError(
-                f"An Embedder client with the same config type `{info.config_type}` has already been registered.")
+            raise ValueError(f"An Embedder client with the same config type `{info.config_type}` has already been "
+                             "registered.")
 
         self._embedder_client_provider_to_framework.setdefault(info.config_type, {})[info.llm_framework] = info
         self._embedder_client_framework_to_provider.setdefault(info.llm_framework, {})[info.config_type] = info
@@ -564,6 +586,7 @@ class TypeRegistry:
 
     def get_embedder_client(self, config_type: type[EmbedderBaseConfig],
                             wrapper_type: str) -> RegisteredEmbedderClientInfo:
+
         try:
             client_info = self._embedder_client_provider_to_framework[config_type][wrapper_type]
         except KeyError as err:
@@ -577,15 +600,17 @@ class TypeRegistry:
         return client_info
 
     def register_evaluator(self, info: RegisteredEvaluatorInfo):
-        if info.config_type in self._registered_evaluator_infos:
-            raise ValueError(
-                f"An Evaluator with the same config type `{info.config_type}` has already been registered.")
+
+        if (info.config_type in self._registered_evaluator_infos):
+            raise ValueError(f"An Evaluator with the same config type `{info.config_type}` has already been "
+                             "registered.")
 
         self._registered_evaluator_infos[info.config_type] = info
 
         self._registration_changed()
 
     def get_evaluator(self, config_type: type[EvaluatorBaseConfig]) -> RegisteredEvaluatorInfo:
+
         try:
             return self._registered_evaluator_infos[config_type]
         except KeyError as err:
@@ -593,10 +618,12 @@ class TypeRegistry:
                            f"Registered configs: {set(self._registered_evaluator_infos.keys())}") from err
 
     def get_registered_evaluators(self) -> list[RegisteredInfo[EvaluatorBaseConfig]]:
+
         return list(self._registered_evaluator_infos.values())
 
     def register_memory(self, info: RegisteredMemoryInfo):
-        if info.config_type in self._registered_memory_infos:
+
+        if (info.config_type in self._registered_memory_infos):
             raise ValueError(
                 f"A Memory client with the same config type `{info.config_type}` has already been registered.")
 
@@ -605,6 +632,7 @@ class TypeRegistry:
         self._registration_changed()
 
     def get_memory(self, config_type: type[MemoryBaseConfig]) -> RegisteredMemoryInfo:
+
         try:
             return self._registered_memory_infos[config_type]
         except KeyError as err:
@@ -612,18 +640,21 @@ class TypeRegistry:
                            f"Registered configs: {set(self._registered_memory_infos.keys())}") from err
 
     def get_registered_memorys(self) -> list[RegisteredInfo[MemoryBaseConfig]]:
+
         return list(self._registered_memory_infos.values())
 
     def register_object_store(self, info: RegisteredObjectStoreInfo):
-        if info.config_type in self._registered_object_store_infos:
-            raise ValueError(
-                f"An Object Store with the same config type `{info.config_type}` has already been registered.")
+
+        if (info.config_type in self._registered_object_store_infos):
+            raise ValueError(f"An Object Store with the same config type `{info.config_type}` has already been "
+                             "registered.")
 
         self._registered_object_store_infos[info.config_type] = info
 
         self._registration_changed()
 
     def get_object_store(self, config_type: type[ObjectStoreBaseConfig]) -> RegisteredObjectStoreInfo:
+
         try:
             return self._registered_object_store_infos[config_type]
         except KeyError as err:
@@ -631,10 +662,12 @@ class TypeRegistry:
                            f"Registered configs: {set(self._registered_object_store_infos.keys())}") from err
 
     def get_registered_object_stores(self) -> list[RegisteredInfo[ObjectStoreBaseConfig]]:
+
         return list(self._registered_object_store_infos.values())
 
     def register_retriever_provider(self, info: RegisteredRetrieverProviderInfo):
-        if info.config_type in self._registered_retriever_provider_infos:
+
+        if (info.config_type in self._registered_retriever_provider_infos):
             raise ValueError(
                 f"A Retriever provider with the same config type `{info.config_type}` has already been registered")
 
@@ -643,6 +676,7 @@ class TypeRegistry:
         self._registration_changed()
 
     def get_retriever_provider(self, config_type: type[RetrieverBaseConfig]) -> RegisteredRetrieverProviderInfo:
+
         try:
             return self._registered_retriever_provider_infos[config_type]
         except KeyError as err:
@@ -650,9 +684,11 @@ class TypeRegistry:
                            f"Registered configs: {set(self._registered_retriever_provider_infos.keys())}") from err
 
     def get_registered_retriever_providers(self) -> list[RegisteredInfo[RetrieverBaseConfig]]:
+
         return list(self._registered_retriever_provider_infos.values())
 
     def register_retriever_client(self, info: RegisteredRetrieverClientInfo):
+
         if (info.config_type in self._retriever_client_provider_to_framework
                 and info.llm_framework in self._retriever_client_provider_to_framework[info.config_type]):
             raise ValueError(f"A Retriever client with the same config type `{info.config_type}` "
@@ -665,6 +701,7 @@ class TypeRegistry:
 
     def get_retriever_client(self, config_type: type[RetrieverBaseConfig],
                              wrapper_type: str | None) -> RegisteredRetrieverClientInfo:
+
         try:
             client_info = self._retriever_client_provider_to_framework[config_type][wrapper_type]
         except KeyError as err:
@@ -678,15 +715,17 @@ class TypeRegistry:
         return client_info
 
     def register_tool_wrapper(self, registration: RegisteredToolWrapper):
-        if registration.llm_framework in self._registered_tool_wrappers:
-            raise ValueError(
-                f"A tool wrapper for the LLM framework `{registration.llm_framework}` has already been registered.")
+
+        if (registration.llm_framework in self._registered_tool_wrappers):
+            raise ValueError(f"A tool wrapper for the LLM framework `{registration.llm_framework}` has already been "
+                             "registered.")
 
         self._registered_tool_wrappers[registration.llm_framework] = registration
 
         self._registration_changed()
 
     def get_tool_wrapper(self, llm_framework: str) -> RegisteredToolWrapper:
+
         try:
             return self._registered_tool_wrappers[llm_framework]
         except KeyError as err:
@@ -694,7 +733,7 @@ class TypeRegistry:
                            f"Registered LLM frameworks: {set(self._registered_tool_wrappers.keys())}") from err
 
     def register_ttc_strategy(self, info: RegisteredTTCStrategyInfo):
-        if info.config_type in self._registered_ttc_strategies:
+        if (info.config_type in self._registered_ttc_strategies):
             raise ValueError(
                 f"An TTC strategy with the same config type `{info.config_type}` has already been registered.")
 
@@ -713,7 +752,8 @@ class TypeRegistry:
         return list(self._registered_ttc_strategies.values())
 
     def register_registry_handler(self, info: RegisteredRegistryHandlerInfo):
-        if info.config_type in self._registered_memory_infos:
+
+        if (info.config_type in self._registered_memory_infos):
             raise ValueError(
                 f"A Registry Handler with the same config type `{info.config_type}` has already been registered.")
 
@@ -723,6 +763,7 @@ class TypeRegistry:
         self._registration_changed()
 
     def get_registry_handler(self, config_type: type[RegistryHandlerBaseConfig]) -> RegisteredRegistryHandlerInfo:
+
         try:
             return self._registered_registry_handler_infos[config_type]
         except KeyError as err:
@@ -730,9 +771,11 @@ class TypeRegistry:
                            f"Registered configs: {set(self._registered_registry_handler_infos.keys())}") from err
 
     def get_registered_registry_handlers(self) -> list[RegisteredInfo[RegistryHandlerBaseConfig]]:
+
         return list(self._registered_registry_handler_infos.values())
 
     def register_package(self, package_name: str, package_version: str | None = None):
+
         discovery_metadata = DiscoveryMetadata.from_package_name(package_name=package_name,
                                                                  package_version=package_version)
         package = RegisteredPackage(discovery_metadata=discovery_metadata, package_name=package_name)
@@ -741,6 +784,7 @@ class TypeRegistry:
         self._registration_changed()
 
     def get_infos_by_type(self, component_type: ComponentEnum) -> dict:
+
         if component_type == ComponentEnum.FRONT_END:
             return self._registered_front_end_infos
 
@@ -810,6 +854,7 @@ class TypeRegistry:
         raise ValueError(f"Supplied an unsupported component type {component_type}")
 
     def get_registered_types_by_component_type(self, component_type: ComponentEnum) -> list[str]:
+
         if component_type == ComponentEnum.FUNCTION:
             return [i.full_type for i in self._registered_functions.values()]
 
@@ -863,7 +908,8 @@ class TypeRegistry:
         return self._registered_channel_map[channel_type]
 
     def _do_compute_annotation(self, cls: type[TypedBaseModelT], registrations: list[RegisteredInfo[TypedBaseModelT]]):
-        while len(registrations) < 2:
+
+        while (len(registrations) < 2):
             registrations.append(RegisteredInfo[TypedBaseModelT](full_type=f"_ignore/{len(registrations)}",
                                                                  config_type=cls))
 
@@ -878,12 +924,14 @@ class TypeRegistry:
 
         # Now loop again and if the short name is unique, then create two entries, for the short and full name
         for key in registrations:
-            if short_names[key.local_name] == 1:
+
+            if (short_names[key.local_name] == 1):
                 type_list.append((key.local_name, key.config_type))
 
         return typing.Union[tuple(typing.Annotated[x_type, Tag(x_id)] for x_id, x_type in type_list)]
 
     def compute_annotation(self, cls: type[TypedBaseModelT]):
+
         if issubclass(cls, AuthProviderBaseConfig):
             return self._do_compute_annotation(cls, self.get_registered_auth_providers())
 
@@ -927,6 +975,7 @@ class TypeRegistry:
 
 
 class GlobalTypeRegistry:
+
     _global_registry: TypeRegistry = TypeRegistry()
 
     @staticmethod
@@ -936,6 +985,7 @@ class GlobalTypeRegistry:
     @staticmethod
     @contextmanager
     def push():
+
         saved = GlobalTypeRegistry._global_registry
         registry = deepcopy(saved)
 

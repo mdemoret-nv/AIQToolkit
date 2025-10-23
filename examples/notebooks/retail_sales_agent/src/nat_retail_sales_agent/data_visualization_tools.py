@@ -15,7 +15,6 @@
 """
 Data visualization tools for retail sales analysis.
 """
-
 from pydantic import Field
 
 from nat.builder.builder import Builder
@@ -28,7 +27,6 @@ from nat.data_models.function import FunctionBaseConfig
 
 class PlotSalesTrendForStoresConfig(FunctionBaseConfig, name="plot_sales_trend_for_stores"):
     """Plot sales trend for a specific store."""
-
     data_path: str = Field(description="Path to the data file")
 
 
@@ -73,13 +71,11 @@ async def plot_sales_trend_for_stores_function(config: PlotSalesTrendForStoresCo
         _plot_sales_trend_for_stores,
         description=(
             "This tool can be used to plot the sales trend for a specific store or all stores. "
-            "It takes in a store ID creates and saves an image of a plot of the revenue trend for that store."),
-    )
+            "It takes in a store ID creates and saves an image of a plot of the revenue trend for that store."))
 
 
 class PlotAndCompareRevenueAcrossStoresConfig(FunctionBaseConfig, name="plot_and_compare_revenue_across_stores"):
     """Plot and compare revenue across stores."""
-
     data_path: str = Field(description="Path to the data file")
 
 
@@ -91,7 +87,7 @@ async def plot_revenue_across_stores_function(config: PlotAndCompareRevenueAcros
 
     df = pd.read_csv(config.data_path)
 
-    async def _plot_revenue_across_stores(input_message: str) -> str:
+    async def _plot_revenue_across_stores(_input_message: str) -> str:
         """
         Create a multi-line chart comparing sales trends between stores.
 
@@ -117,13 +113,11 @@ async def plot_revenue_across_stores_function(config: PlotAndCompareRevenueAcros
             "This tool can be used to plot and compare the revenue trends across stores. Use this tool only if the "
             "user asks for a comparison of revenue trends across stores."
             "It takes in an input message and creates and saves an image of a plot of the revenue trends across stores."
-        ),
-    )
+        ))
 
 
 class PlotAverageDailyRevenueConfig(FunctionBaseConfig, name="plot_average_daily_revenue"):
     """Plot average daily revenue for stores and products."""
-
     data_path: str = Field(description="Path to the data file")
 
 
@@ -135,7 +129,7 @@ async def plot_average_daily_revenue_function(config: PlotAverageDailyRevenueCon
 
     df = pd.read_csv(config.data_path)
 
-    async def _plot_average_daily_revenue(input_message: str) -> str:
+    async def _plot_average_daily_revenue(_input_message: str) -> str:
         """
         Create a bar chart showing average revenue by day of the week.
 
@@ -154,7 +148,7 @@ async def plot_average_daily_revenue_function(config: PlotAverageDailyRevenueCon
         plt.ylabel("Average Revenue")
         plt.xlabel("Store ID")
         plt.xticks(rotation=0)
-        plt.legend(title="Product", bbox_to_anchor=(1.05, 1), loc="upper left")
+        plt.legend(title="Product", bbox_to_anchor=(1.05, 1), loc='upper left')
         plt.tight_layout()
         plt.savefig("average_daily_revenue.png")
 
@@ -164,13 +158,11 @@ async def plot_average_daily_revenue_function(config: PlotAverageDailyRevenueCon
         _plot_average_daily_revenue,
         description=("This tool can be used to plot the average daily revenue for stores and products "
                      "It takes in an input message and creates and saves an image of a grouped bar chart "
-                     "of the average daily revenue"),
-    )
+                     "of the average daily revenue"))
 
 
 class GraphSummarizerConfig(FunctionBaseConfig, name="graph_summarizer"):
     """Analyze and summarize chart data."""
-
     llm_name: LLMRef = Field(description="The name of the LLM to use for the graph summarizer.")
 
 
@@ -198,7 +190,7 @@ async def graph_summarizer_function(config: GraphSummarizerConfig, builder: Buil
 
         def encode_image(image_path: str):
             with open(image_path, "rb") as image_file:
-                return base64.b64encode(image_file.read()).decode("utf-8")
+                return base64.b64encode(image_file.read()).decode('utf-8')
 
         base64_image = encode_image(image_path)
 
@@ -207,15 +199,12 @@ async def graph_summarizer_function(config: GraphSummarizerConfig, builder: Buil
             input=[{
                 "role":
                     "user",
-                "content": [
-                    {
-                        "type": "input_text",
-                        "text": "Please summarize the key insights from this graph in natural language.",
-                    },
-                    {
-                        "type": "input_image", "image_url": f"data:image/png;base64,{base64_image}"
-                    },
-                ],
+                "content": [{
+                    "type": "input_text",
+                    "text": "Please summarize the key insights from this graph in natural language."
+                }, {
+                    "type": "input_image", "image_url": f"data:image/png;base64,{base64_image}"
+                }]
             }],
             temperature=0.3,
         )
@@ -225,5 +214,4 @@ async def graph_summarizer_function(config: GraphSummarizerConfig, builder: Buil
     yield FunctionInfo.from_fn(
         _graph_summarizer,
         description=("This tool can be used to summarize the key insights from a graph in natural language. "
-                     "It takes in the path to an image and returns a summary of the key insights from the graph."),
-    )
+                     "It takes in the path to an image and returns a summary of the key insights from the graph."))

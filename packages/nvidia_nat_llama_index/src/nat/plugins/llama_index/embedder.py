@@ -25,23 +25,23 @@ from nat.utils.exception_handlers.automatic_retries import patch_with_retry
 
 @register_embedder_client(config_type=AzureOpenAIEmbedderModelConfig, wrapper_type=LLMFrameworkEnum.LLAMA_INDEX)
 async def azure_openai_llama_index(embedder_config: AzureOpenAIEmbedderModelConfig, _builder: Builder):
+
     from llama_index.embeddings.azure_openai import AzureOpenAIEmbedding
 
     client = AzureOpenAIEmbedding(**embedder_config.model_dump(exclude={"type"}, by_alias=True))
 
     if isinstance(embedder_config, RetryMixin):
-        client = patch_with_retry(
-            client,
-            retries=embedder_config.num_retries,
-            retry_codes=embedder_config.retry_on_status_codes,
-            retry_on_messages=embedder_config.retry_on_errors,
-        )
+        client = patch_with_retry(client,
+                                  retries=embedder_config.num_retries,
+                                  retry_codes=embedder_config.retry_on_status_codes,
+                                  retry_on_messages=embedder_config.retry_on_errors)
 
     yield client
 
 
 @register_embedder_client(config_type=NIMEmbedderModelConfig, wrapper_type=LLMFrameworkEnum.LLAMA_INDEX)
 async def nim_llamaindex(embedder_config: NIMEmbedderModelConfig, _builder: Builder):
+
     from llama_index.embeddings.nvidia import NVIDIAEmbedding
 
     config_obj = {
@@ -58,16 +58,15 @@ async def nim_llamaindex(embedder_config: NIMEmbedderModelConfig, _builder: Buil
 
 @register_embedder_client(config_type=OpenAIEmbedderModelConfig, wrapper_type=LLMFrameworkEnum.LLAMA_INDEX)
 async def openai_llama_index(embedder_config: OpenAIEmbedderModelConfig, _builder: Builder):
+
     from llama_index.embeddings.openai import OpenAIEmbedding
 
     client = OpenAIEmbedding(**embedder_config.model_dump(exclude={"type"}, by_alias=True))
 
     if isinstance(embedder_config, RetryMixin):
-        client = patch_with_retry(
-            client,
-            retries=embedder_config.num_retries,
-            retry_codes=embedder_config.retry_on_status_codes,
-            retry_on_messages=embedder_config.retry_on_errors,
-        )
+        client = patch_with_retry(client,
+                                  retries=embedder_config.num_retries,
+                                  retry_codes=embedder_config.retry_on_status_codes,
+                                  retry_on_messages=embedder_config.retry_on_errors)
 
     yield client

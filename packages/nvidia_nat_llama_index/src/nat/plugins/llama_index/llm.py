@@ -36,6 +36,7 @@ ModelType = TypeVar("ModelType")
 
 
 def _patch_llm_based_on_config(client: ModelType, llm_config: LLMBaseConfig) -> ModelType:
+
     from llama_index.core.base.llms.types import ChatMessage
 
     class LlamaIndexThinkingInjector(BaseThinkingInjector):
@@ -56,22 +57,20 @@ def _patch_llm_based_on_config(client: ModelType, llm_config: LLMBaseConfig) -> 
                     "achat",
                     "astream_chat",
                 ],
-            ),
-        )
+            ))
 
     if isinstance(llm_config, RetryMixin):
-        client = patch_with_retry(
-            client,
-            retries=llm_config.num_retries,
-            retry_codes=llm_config.retry_on_status_codes,
-            retry_on_messages=llm_config.retry_on_errors,
-        )
+        client = patch_with_retry(client,
+                                  retries=llm_config.num_retries,
+                                  retry_codes=llm_config.retry_on_status_codes,
+                                  retry_on_messages=llm_config.retry_on_errors)
 
     return client
 
 
 @register_llm_client(config_type=AWSBedrockModelConfig, wrapper_type=LLMFrameworkEnum.LLAMA_INDEX)
 async def aws_bedrock_llama_index(llm_config: AWSBedrockModelConfig, _builder: Builder):
+
     from llama_index.llms.bedrock import Bedrock
 
     # LlamaIndex uses context_size instead of max_tokens
@@ -82,6 +81,7 @@ async def aws_bedrock_llama_index(llm_config: AWSBedrockModelConfig, _builder: B
 
 @register_llm_client(config_type=AzureOpenAIModelConfig, wrapper_type=LLMFrameworkEnum.LLAMA_INDEX)
 async def azure_openai_llama_index(llm_config: AzureOpenAIModelConfig, _builder: Builder):
+
     from llama_index.llms.azure_openai import AzureOpenAI
 
     llm = AzureOpenAI(**llm_config.model_dump(exclude={"type"}, by_alias=True))
@@ -91,6 +91,7 @@ async def azure_openai_llama_index(llm_config: AzureOpenAIModelConfig, _builder:
 
 @register_llm_client(config_type=NIMModelConfig, wrapper_type=LLMFrameworkEnum.LLAMA_INDEX)
 async def nim_llama_index(llm_config: NIMModelConfig, _builder: Builder):
+
     from llama_index.llms.nvidia import NVIDIA
 
     llm = NVIDIA(**llm_config.model_dump(exclude={"type"}, by_alias=True, exclude_none=True))
@@ -106,6 +107,7 @@ async def nim_llama_index(llm_config: NIMModelConfig, _builder: Builder):
 
 @register_llm_client(config_type=OpenAIModelConfig, wrapper_type=LLMFrameworkEnum.LLAMA_INDEX)
 async def openai_llama_index(llm_config: OpenAIModelConfig, _builder: Builder):
+
     from llama_index.llms.openai import OpenAI
 
     llm = OpenAI(**llm_config.model_dump(exclude={"type"}, by_alias=True, exclude_none=True))
