@@ -13,9 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# flake8: noqa
-# isort:skip_file
+from pydantic import Field
 
-from .chat import register as chat_register
-from .console import register as console_register
-from .fastapi import register as fastapi_register
+from nat.data_models.front_end import FrontEndBaseConfig
+
+
+class ChatFrontEndConfig(FrontEndBaseConfig, name="chat"):
+    """
+    A front end that enables multi-turn interactive chat sessions with a NAT workflow.
+
+    Launches an interactive console with rich formatting, streaming LLM output, and
+    live display of intermediate steps (tool calls, LLM events) as they occur.
+    """
+
+    user_id: str = Field(
+        default="nat_chat_user_id",
+        description="User ID for the workflow session. Reused across turns to maintain conversation state.",
+    )

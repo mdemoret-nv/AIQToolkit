@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# flake8: noqa
-# isort:skip_file
+from nat.cli.register_workflow import register_front_end
+from nat.data_models.config import Config
+from nat.front_ends.chat.chat_front_end_config import ChatFrontEndConfig
 
-from .chat import register as chat_register
-from .console import register as console_register
-from .fastapi import register as fastapi_register
+
+@register_front_end(config_type=ChatFrontEndConfig)
+async def register_chat_front_end(config: ChatFrontEndConfig, full_config: Config):
+    from nat.front_ends.chat.chat_front_end_plugin import ChatFrontEndPlugin
+
+    yield ChatFrontEndPlugin(full_config=full_config)

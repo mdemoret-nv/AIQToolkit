@@ -99,6 +99,7 @@ start_cmd = cli.commands.get("start")
 if start_cmd and hasattr(start_cmd, "get_command"):
     cli.add_command(start_cmd.get_command(None, "console"), name="run")  # type: ignore
     cli.add_command(start_cmd.get_command(None, "fastapi"), name="serve")  # type: ignore
+    cli.add_command(start_cmd.get_command(None, "chat"), name="chat")  # type: ignore
 
 
 @cli.result_callback()

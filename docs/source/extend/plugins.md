@@ -89,7 +89,7 @@ The `wrapper_type` argument can also be used with the library's `Builder` class 
 
 ### Entry Point
 
-Determining which plugins are available in a given environment is done through the use of [python entry points](https://packaging.python.org/en/latest/specifications/entry-points/). In NeMo Agent Toolkit, we scan the python environment for entry points which have the name `nat.plugins`. The value of the entry point is a python module that will be imported when the entry point is loaded.
+Determining which plugins are available in a given environment is done through the use of [python entry points](https://packaging.python.org/en/latest/specifications/entry-points/). In NeMo Agent Toolkit, we scan the python environment for entry points which have the name `nat.plugins`. Front ends can also be registered through the more specific `nat.front_ends` entry point group. The value of the entry point is a python module that will be imported when the entry point is loaded.
 
 For example, the `nvidia-nat-langchain` distribution has the following entry point specified in the `pyproject.toml` file:
 
@@ -99,6 +99,8 @@ nat_langchain = "nat.plugins.langchain.register"
 ```
 
 What this means is that when the `nvidia-nat-langchain` distribution is installed, the `nat.plugins.langchain.register` module will be imported when the entry point is loaded. This module must contain all the `@register_<plugin_type>` decorators which need to be loaded when the library is initialized.
+
+For front-end plugins, use `nat.front_ends` when the package only registers front ends. Use `nat.plugins` when a package registers a mix of component types or needs the generic plugin hook; front-end discovery also loads `nat.plugins` so those front ends are available to the `nat start` command.
 
 :::{note}
 The above syntax in the `pyproject.toml` file is specific to [uv](https://docs.astral.sh/uv/concepts/projects/config/#plugin-entry-points). Other package managers may have a different syntax for specifying entry points.
